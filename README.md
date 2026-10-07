@@ -1,2 +1,2 @@
 # auto-refactor-agent
-Automated Code Refactoring &amp; Security Agent
+Automated Code Refactoring & Security Agent
