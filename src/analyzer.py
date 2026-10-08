@@ -7,7 +7,8 @@ class AutoRefactorTool:
         self.code_base = code_base
         
     def run(self):
-        self.code_analyzing()
+        parsed_analysis = self.code_analyzing()
+        self.refactoring_suggesting(parsed_analysis)
 
     @staticmethod
     def run_bandit(path):
@@ -73,13 +74,14 @@ class AutoRefactorTool:
         return res
 
     def code_analyzing(self):
-        bandit_res = self.run_bandit(self.code_base)
-        # issue_text, filename, line_number
+        res = {}
+        res['security_analysis'] = self.run_bandit(self.code_base)
+        res['typo_analysis'] = self.run_codespell(self.code_base)
+        return res
 
-        codespell_res = self.run_codespell(self.code_base)
-
-    def refactoring_suggesting(self):
-        pass
+    def refactoring_suggesting(self, parsed_analysis):
+        system_prompt = {"You are an expert Python Security & Software Engineer. Your job is to take raw Python code along with a list of static analysis issues (from Bandit and Codespell) and produce a refactored, clean version of the code that fixes all issues while preserving functional behavior"}
+        user_prompt = f"Target File: {self.code_base}\n\nOriginal Code:\npython\n\n\nDetected Security Issues:\n{parsed_analysis['security_analysis']}\n\nDetected Spelling Issues:\n{parsed_analysis['typo_analysis']}Please provide the refactored code, explanations, and confidence score"
 
     def Summerize_analysis(self):
         pass
