@@ -1,6 +1,5 @@
 import json
 import subprocess
-import sys
 
 class AutoRefactorTool:
 
@@ -10,27 +9,32 @@ class AutoRefactorTool:
     def run(self):
         self.code_analyzing()
 
-    def code_analyzing(self):
-
-
+    @staticmethod
+    def run_bandit(path):
         result = subprocess.run(
             [
-                sys.executable,
-                "-m",
                 "bandit",
                 "-r",
-                self.code_base,
+                path,
                 "-f",
                 "json",
             ],
             capture_output=True,
             text=True,
         )
-        print("return code:", result.returncode)
-        print("stdout:", result.stdout)
-        print("stderr:", result.stderr)
+
+        if not result.stdout:
+            raise RuntimeError(
+                f"Bandit failed to run:\n{result.stderr}"
+            )
 
         return json.loads(result.stdout)
+
+    def run_codespell(self):
+        pass
+
+    def code_analyzing(self):
+        self.run_bandit(self.code_base)
 
     def refactoring_suggesting(self):
         pass
