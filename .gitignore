@@ -1,0 +1,28 @@
+# Virtual environment
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+src/__pycache__/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Linters / type checkers
+.ruff_cache/
+.mypy_cache/
+
+# IDE
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Environment variables / secrets
+.env
+.env.*
