@@ -85,7 +85,3 @@ class AutoRefactorTool:
 
     def Summerize_analysis(self):
         pass
-
-
-    '/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:23: expcted ==> expected\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:24: ans ==> and\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:25: ans ==> and\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:26: ans ==> and\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:26: expcted ==> expected\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:30: expcted ==> expected\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:31: ans ==> and\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:32: ans ==> and\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:33: ans ==> and\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:33: expcted ==> expected\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:36: expcted ==> expected\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:37: ans ==> and\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:38: ans ==> and\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:39: ans ==> and\n/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py:39: expcted ==> expected\n\n-------8<-------\nSUMMARY:\nans           9\nexpcted       6\n'
-    codespell
