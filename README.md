@@ -3,6 +3,10 @@ Automated Code Refactoring & Security Agent
 
 
 ## instalations
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 
-python -m pip install bandit
-python -m pip install codespell
+## We use the next packages:
+bandit
+codespell
