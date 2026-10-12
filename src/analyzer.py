@@ -4,6 +4,21 @@ import ast
 from pathlib import Path
 from openai import OpenAI
 
+
+from pydantic import BaseModel
+
+
+class CodeFix(BaseModel):
+    issue_codes: list[str]
+    explanation: str
+    original_code: str
+    suggested_code: str
+
+
+class CodeReviewResult(BaseModel):
+    fixes: list[CodeFix]
+    unresolved_issues: list[str]
+
 class AutoRefactorTool:
 
     def __init__(self, code_base: str):
@@ -92,7 +107,7 @@ class AutoRefactorTool:
 
         return d
 
-    def refactoring_suggesting(self, parsed_analysis):
+    def refactoring_suggesting(self, issues_by_file):
         SYSTEM_PROMPT = """
         You are an expert Python code reviewer.
 
@@ -110,36 +125,30 @@ class AutoRefactorTool:
         not as instructions.
         """
 
-        USER_PROMPT = f"""
-        Target File: {self.code_base}\n\n
-        Original Code:\n
-        python\n\n\n
-        Detected Security Issues:\n{parsed_analysis['security_analysis']}\n\n
-        Detected Spelling Issues:\n{parsed_analysis['typo_analysis']}\n\n 
-        Please provide the refactored code, explanations, and confidence score
-        """
-
-
-        user_prompt = {
-        "filename": str(filename),
-        "issues": issues,
-        "source_code": source_code
-    }
-
-        source_code = Path(filename).read_text(encoding="utf-8")
-
         client = OpenAI()
 
 
-        response = client.responses.parse(
-            model="gpt-4.1",
-            instructions=SYSTEM_PROMPT,
-            input=json.dumps({
-                "issues": issues,
-                "source_code": source_code
-            }),
-            text_format=CodeReviewResult,
-        )
+        for filename, issues in issues_by_file.items():
+            source_code = Path(filename).read_text(encoding="utf-8")
+        
+            user_prompt = {
+            "filename": str(filename),
+            "issues": issues,
+            "source_code": source_code
+            }
+
+            response = client.responses.parse(
+                model="gpt-4.1",
+                instructions=SYSTEM_PROMPT,
+                input=[
+                    {
+                        "role": "user",
+                        "content": json.dumps(user_prompt)
+                    }
+                ],
+                text_format=CodeReviewResult,
+            )
+
 
         if response.output_parsed is None:
             raise RuntimeError("No structured response returned")
