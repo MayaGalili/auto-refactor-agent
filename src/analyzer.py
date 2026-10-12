@@ -1,5 +1,7 @@
 import json
 import subprocess
+import ast
+from pathlib import Path
 
 class AutoRefactorTool:
 
@@ -19,8 +21,6 @@ class AutoRefactorTool:
                 "-r",
                 "-ll",
                 "-ii",
-                # "--format",
-                # "custom",
                 path,
                 "-f",
                 "json",
@@ -44,14 +44,13 @@ class AutoRefactorTool:
         print(d)
         return d 
 
-    @staticmethod
-    def run_codespell(path):
+    def run_codespell(self):
         print("Running CodeBase")
         result = subprocess.run(
         [
             "codespell",
             "-s",
-            path,
+            self.code_base,
         ],
         capture_output=True,
         text=True,
@@ -64,19 +63,21 @@ class AutoRefactorTool:
         res = res.split('\n')
         d = dict()
         for i, r in enumerate(res):
+            if r == "":
+                break
             filename, line_number, r = r.split(':')
             type_str, fixed_str = r.split(" ==> ")
             d[i] = {"filename": filename,
                     "line_number": line_number,
-                    "code": "",
+                    "code": self.extract_relevant_code(filename, int(line_number)),
                     "issue_text": f"suspected type. {type_str[1:]} should be replaced with {fixed_str}"}
    
-        return res
+        return d
 
     def code_analyzing(self):
         res = {}
         res['security_analysis'] = self.run_bandit(self.code_base)
-        res['typo_analysis'] = self.run_codespell(self.code_base)
+        res['typo_analysis'] = self.run_codespell()
         return res
 
     def refactoring_suggesting(self, parsed_analysis):
@@ -85,3 +86,37 @@ class AutoRefactorTool:
 
     def Summerize_analysis(self):
         pass
+
+    def extract_relevant_code(self, filename: str, line_number: int) -> dict:
+        source = Path(filename).read_text(encoding="utf-8")
+        lines = source.splitlines()
+
+        tree = ast.parse(source)
+
+        relevant_nodes = (
+            ast.FunctionDef,
+            ast.AsyncFunctionDef,
+            ast.ClassDef,
+        )
+
+        candidates = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, relevant_nodes)
+            and node.lineno <= line_number <= node.end_lineno
+        ]
+
+        if candidates:
+            node = min(
+                candidates,
+                key=lambda n: n.end_lineno - n.lineno
+            )
+
+            start = node.lineno
+            end = node.end_lineno
+        else:
+            # Fallback: surrounding lines
+            start = max(1, line_number - 5)
+            end = min(len(lines), line_number + 5)
+
+        return "\n".join(lines[start - 1:end])
