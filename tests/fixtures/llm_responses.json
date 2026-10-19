@@ -1,0 +1,45 @@
+{
+  "/Users/maya/projects/auto-refactor-agent/examples/binding.py": {
+    "fixes": [
+      {
+        "issue_codes": [
+          "SECURITY_BIND_ALL_INTERFACES"
+        ],
+        "explanation": "Binding to '0.0.0.0' exposes the socket to all network interfaces, which can be a security risk. It is safer to bind to a specific interface, such as '127.0.0.1' for localhost or an internal IP.",
+        "original_code": "s.bind(('0.0.0.0', 31137))",
+        "suggested_code": "s.bind(('127.0.0.1', 31137))"
+      }
+    ],
+    "unresolved_issues": [
+      "There are two consecutive s.bind() calls. In most cases, the second bind will raise an error because the socket can generally only be bound once. Review application logic if both are required, but this is outside the scope of the reported issue."
+    ]
+  },
+  "/Users/maya/projects/auto-refactor-agent/examples/flask_debug.py": {
+    "fixes": [
+      {
+        "issue_codes": [
+          "security_analysis"
+        ],
+        "explanation": "Running a Flask app with debug=True is insecure for production since it exposes the interactive debugger. The fix is to set debug=False or simply call app.run() without the debug argument.",
+        "original_code": "app.run(debug=True)",
+        "suggested_code": "app.run()"
+      }
+    ],
+    "unresolved_issues": []
+  },
+  "/Users/maya/projects/auto-refactor-agent/examples/LeetCode3.py": {
+    "fixes": [
+      {
+        "issue_codes": [
+          "suspected type. expcted should be replaced with expected"
+        ],
+        "explanation": "Multiple occurrences of the variable name 'expcted' are suspected typos. They should be corrected to 'expected' for clarity and consistency.",
+        "original_code": "    expcted = 1\n    ans = Solution().lengthOfLongestSubstring(s)\n    print(ans)\n    assert ans == expcted\n\n\n    s = \"1R1T7\"\n    expcted = 4\n    ans = Solution().lengthOfLongestSubstring(s)\n    print(ans)\n    assert ans == expcted\n\n    s = \"abcabcbb\"\n    expcted = 3\n    ans = Solution().lengthOfLongestSubstring(s)\n    print(ans)\n    assert ans == expcted",
+        "suggested_code": "    expected = 1\n    ans = Solution().lengthOfLongestSubstring(s)\n    print(ans)\n    assert ans == expected\n\n\n    s = \"1R1T7\"\n    expected = 4\n    ans = Solution().lengthOfLongestSubstring(s)\n    print(ans)\n    assert ans == expected\n\n    s = \"abcabcbb\"\n    expected = 3\n    ans = Solution().lengthOfLongestSubstring(s)\n    print(ans)\n    assert ans == expected"
+      }
+    ],
+    "unresolved_issues": [
+      "suspected type. ans should be replaced with and"
+    ]
+  }
+}
