@@ -2,3 +2,4 @@ bandit
 codespell
 pytest
 openai
+dotenv

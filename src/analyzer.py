@@ -3,6 +3,8 @@ import subprocess
 import ast
 from pathlib import Path
 from openai import OpenAI
+import os
+from dotenv import load_dotenv
 
 
 from pydantic import BaseModel
@@ -18,6 +20,12 @@ class CodeFix(BaseModel):
 class CodeReviewResult(BaseModel):
     fixes: list[CodeFix]
     unresolved_issues: list[str]
+
+
+
+load_dotenv()
+
+print("API key loaded:", bool(os.getenv("OPENAI_API_KEY")))
 
 class AutoRefactorTool:
 
