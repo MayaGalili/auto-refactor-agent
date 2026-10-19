@@ -65,11 +65,10 @@ class AutoRefactorTool:
         for i, n in enumerate(res):
             d[i] = {key: n[key] for key in wanted_keys}
 
-        print(d)
         return d 
 
     def run_codespell(self):
-        print("Running CodeBase")
+        print("Running CodeBase...")
         result = subprocess.run(
         [
             "codespell",
@@ -109,9 +108,9 @@ class AutoRefactorTool:
             for _,v in res[issue_type].items():
                 tmp_d = {"type": "security_analysis", "line_number": v["line_number"], "code": v["code"], "issue_text": v["issue_text"]}
                 if v["filename"] in d:
-                    d['filename'].append(tmp_d)
+                    d[v['filename']].append(tmp_d)
                 else:
-                    d['filename'] = [tmp_d]
+                    d[v['filename']] = [tmp_d]
 
         return d
 
@@ -157,11 +156,16 @@ class AutoRefactorTool:
                 text_format=CodeReviewResult,
             )
 
-
+            # Token usage
+            usage = response.usage
+            print(f"Tokens Status: Input: {usage.input_tokens}, Output: {usage.output_tokens}, Total: {usage.total_tokens}")
+            print(f"Suggestions for file {filename}: {response.output_parsed}")
         if response.output_parsed is None:
             raise RuntimeError("No structured response returned")
 
+
         return response.output_parsed
+    
     def Summerize_analysis(self):
         pass
 
