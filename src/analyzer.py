@@ -1,3 +1,4 @@
+import difflib
 import json
 import subprocess
 import ast
@@ -5,6 +6,7 @@ from pathlib import Path
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+import difflib
 
 
 from pydantic import BaseModel
@@ -34,7 +36,8 @@ class AutoRefactorTool:
         
     def run(self):
         parsed_analysis = self.code_analyzing()
-        self.refactoring_suggesting(parsed_analysis)
+        suggestions = self.refactoring_suggesting(parsed_analysis)
+        self.apply_suggestions(suggestions)
 
     @staticmethod
     def run_bandit(path):
@@ -134,6 +137,8 @@ class AutoRefactorTool:
 
         client = OpenAI()
 
+        res = {}
+
 
         for filename, issues in issues_by_file.items():
             source_code = Path(filename).read_text(encoding="utf-8")
@@ -159,12 +164,16 @@ class AutoRefactorTool:
             # Token usage
             usage = response.usage
             print(f"Tokens Status: Input: {usage.input_tokens}, Output: {usage.output_tokens}, Total: {usage.total_tokens}")
+
+            if response.output_parsed is None:
+                raise RuntimeError("No structured response returned")
+            
             print(f"Suggestions for file {filename}: {response.output_parsed}")
-        if response.output_parsed is None:
-            raise RuntimeError("No structured response returned")
+            res[filename] = response.output_parsed
 
 
-        return response.output_parsed
+
+        return res
     
     def Summerize_analysis(self):
         pass
@@ -202,3 +211,19 @@ class AutoRefactorTool:
             end = min(len(lines), line_number + 5)
 
         return "\n".join(lines[start - 1:end])
+
+    def apply_suggestions(self, suggestions: dict):
+        for file_suggestions in suggestions.items():
+            for fix in suggestions[file_suggestions]:
+                self.show_diff(fix['original_code'], fix['suggested_code'])
+
+
+    def show_diff(self, original_code: str, refactored_code: str):
+        diff = difflib.unified_diff(
+            original_code.splitlines(),
+            refactored_code.splitlines(),
+            fromfile='Original',
+            tofile='Refactored',
+            lineterm=''
+        )
+        print('\n'.join(diff))
