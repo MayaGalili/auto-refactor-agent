@@ -11,6 +11,7 @@ src/__pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
+*.bak
 
 # Linters / type checkers
 .ruff_cache/
