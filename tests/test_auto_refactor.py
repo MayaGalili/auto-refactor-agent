@@ -1,6 +1,7 @@
 import shutil
-import tempfile
 from pathlib import Path
+
+import pytest
 
 from src.analyzer import AutoRefactorTool
 from src.schemas import CodeReviewResult, CodeFix
@@ -9,13 +10,11 @@ EXAMPLES_DIR = Path(__file__).parent.parent / "examples"
 
 
 def test_run_codespell():
-    a = AutoRefactorTool( "/Users/maya/projects/auto-refactor-agent/examples").run_codespell()
-    assert isinstance(a, dict)
+    codespell_res = AutoRefactorTool(str(EXAMPLES_DIR)).run_codespell()
+    assert isinstance(codespell_res, dict)
 
-def test_apply_suggestions(llm_results, monkeypatch):
-    # Work on a copy of the examples so the originals are never modified
-    temp_dir = Path(tempfile.mkdtemp(prefix="auto_refactor_test_"))
-    temp_examples = temp_dir / "examples"
+def test_apply_suggestions(llm_results, monkeypatch, tmp_path):
+    temp_examples = tmp_path / "examples"
     shutil.copytree(EXAMPLES_DIR, temp_examples)
 
     # Point the suggestions at the copied files instead of the originals
@@ -37,9 +36,6 @@ def test_apply_suggestions(llm_results, monkeypatch):
         assert refactored.read_text(encoding="utf-8") != backup.read_text(encoding="utf-8"), (
             f"{refactored.name} was not changed by the refactoring"
         )
-
-    # Only reached if all assertions passed - otherwise keep it for inspection
-    shutil.rmtree(temp_dir)
 
 def test_llm_results_structure(llm_results):
     assert len(llm_results) == 3
