@@ -1,14 +1,16 @@
 import difflib
 import json
+import shutil
 import subprocess
-import ast
 from pathlib import Path
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import difflib
+from pathlib import Path
+import ast
 
-from src.schemas import CodeReviewResult
+from src.schemas import CodeReviewResult, CodeFix
 
 
 load_dotenv()
@@ -204,6 +206,8 @@ class AutoRefactorTool:
             print(f"\n{'━' * 60}")
             print(f"File: {file_name}")
             print(f"{'━' * 60}")
+            self.backup_file(file_name)
+            
             for i, fix in enumerate(file_suggestions.fixes):
                 print(f"Suggested fix #{i}")
                 self.show_diff(fix.original_code, fix.suggested_code)
@@ -211,10 +215,9 @@ class AutoRefactorTool:
 
                 if do_the_change:
                     print(f"Applying changes for {file_name}.")
+                    self.apply_fix(file_name, fix)
                 else:
                     print(f"Skipping the refactoring of {file_name}.")
-
-
 
     def show_diff(self, original_code: str, refactored_code: str):
         diff = difflib.unified_diff(
@@ -240,3 +243,48 @@ class AutoRefactorTool:
                 return False
 
             print("Please enter 'y' or 'n'.")
+
+
+    def apply_fix(SELF, filename: str, fix: CodeFix) -> bool:
+        path = Path(filename)
+
+        # Read original file
+        source = path.read_text(encoding="utf-8")
+
+        # Verify the original code exists exactly once
+        occurrences = source.count(fix.original_code)
+
+        if occurrences != 1:
+            print(
+                f"Cannot apply fix: expected 1 match, "
+                f"found {occurrences}"
+            )
+            return False
+
+        # Apply the suggested change in memory
+        updated_source = source.replace(
+            fix.original_code,
+            fix.suggested_code,
+            1
+        )
+
+        # Validate Python syntax before writing
+        try:
+            ast.parse(updated_source)
+        except SyntaxError as e:
+            print(f"Invalid Python syntax: {e}")
+            return False
+
+        # Write the updated file
+        path.write_text(updated_source, encoding="utf-8")
+
+        print(f"Successfully updated: {filename}")
+        return True
+
+    def backup_file(self, filename: str):
+        source = Path(filename)
+        backup = source.with_suffix(source.suffix + ".bak")
+
+        shutil.copy2(source, backup)
+
+        return backup
