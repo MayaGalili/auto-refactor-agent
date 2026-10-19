@@ -8,21 +8,7 @@ import os
 from dotenv import load_dotenv
 import difflib
 
-
-from pydantic import BaseModel
-
-
-class CodeFix(BaseModel):
-    issue_codes: list[str]
-    explanation: str
-    original_code: str
-    suggested_code: str
-
-
-class CodeReviewResult(BaseModel):
-    fixes: list[CodeFix]
-    unresolved_issues: list[str]
-
+from src.schemas import CodeReviewResult
 
 
 load_dotenv()
@@ -213,9 +199,21 @@ class AutoRefactorTool:
         return "\n".join(lines[start - 1:end])
 
     def apply_suggestions(self, suggestions: dict):
-        for file_suggestions in suggestions.items():
-            for fix in suggestions[file_suggestions]:
-                self.show_diff(fix['original_code'], fix['suggested_code'])
+
+        for file_name, file_suggestions in suggestions.items():
+            print(f"\n{'━' * 60}")
+            print(f"File: {file_name}")
+            print(f"{'━' * 60}")
+            for i, fix in enumerate(file_suggestions.fixes):
+                print(f"Suggested fix #{i}")
+                self.show_diff(fix.original_code, fix.suggested_code)
+                do_the_change = self.confirm_changes()
+
+                if do_the_change:
+                    print(f"Applying changes for {file_name}.")
+                else:
+                    print(f"Skipping the refactoring of {file_name}.")
+
 
 
     def show_diff(self, original_code: str, refactored_code: str):
@@ -227,3 +225,18 @@ class AutoRefactorTool:
             lineterm=''
         )
         print('\n'.join(diff))
+
+
+    def confirm_changes(self) -> bool:
+        while True:
+            answer = input(
+                "\nApply suggested changes? [y/N]: "
+            ).strip().lower()
+
+            if answer in ("y", "yes"):
+                return True
+
+            if answer in ("", "n", "no"):
+                return False
+
+            print("Please enter 'y' or 'n'.")
