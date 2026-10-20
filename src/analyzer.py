@@ -97,7 +97,7 @@ class AutoRefactorTool:
         d = {}
         for issue_type in ['security_analysis', 'typo_analysis']:
             for _,v in res[issue_type].items():
-                tmp_d = {"type": "security_analysis", "line_number": v["line_number"], "code": v["code"], "issue_text": v["issue_text"]}
+                tmp_d = {"type": issue_type, "line_number": v["line_number"], "code": v["code"], "issue_text": v["issue_text"]}
                 if v["filename"] in d:
                     d[v['filename']].append(tmp_d)
                 else:
